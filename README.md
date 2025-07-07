@@ -1,3 +1,4 @@
+
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -32,12 +33,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <!-- Chosen Palette: Warm Neutrals -->
-    <!-- Application Structure Plan: A single-page application with a two-column layout. The left column features a prominent, vertical, interactive stepper/navigator representing the emotional progression from low to high. Clicking a state on this navigator dynamically updates the right column, which displays detailed information (description, thoughts, behaviors, energy). This interactive navigation provides a clear visual metaphor for the journey through emotional states. Below this main section, a radar chart offers a comparative visualization of the 'energy level' for all five states, providing an at-a-glance summary. A new section is added at the bottom for data tracking and consultation, allowing users to see their current session ID and to retrieve historical selections by other user IDs. This section now includes a line chart to visualize the emotional journey over time and a placeholder for insights/advice, emphasizing public accessibility for collaborative emotional path understanding. -->
+    <!-- Application Structure Plan: A single-page application with a two-column layout. The left column features a prominent, vertical, interactive stepper/navigator representing the emotional progression from low to high. Clicking a state on this navigator dynamically updates the right column, which displays detailed information (description, thoughts, behaviors, energy). The main content section now includes a "Valider mon humeur actuelle" button for explicit saving. The bottom section for data tracking is now fully public, displaying all recorded emotional entries from all users in a line chart and detailed list, without requiring specific user IDs for consultation. This emphasizes collective emotional journey tracking and public accessibility. -->
     <!-- Visualization & Content Choices: 
-        - Report Info: 5 emotional states with descriptions, thoughts, behaviors, energy. Goal: Inform & Compare. Viz: Interactive vertical stepper (HTML/CSS/JS) and dynamic text panels. Interaction: User clicks a state to update content and automatically save selection to Firestore. Justification: Provides a clear, intuitive navigation path that mirrors the emotional journey, with data capture on interaction.
+        - Report Info: 5 emotional states with descriptions, thoughts, behaviors, energy. Goal: Inform & Compare. Viz: Interactive vertical stepper (HTML/CSS/JS) and dynamic text panels. Interaction: User clicks a state to update content. Justification: Provides a clear, intuitive navigation path that mirrors the emotional journey.
+        - New Interaction: "Valider mon humeur actuelle" button. Goal: Explicitly save the current emotional state. Viz: Button. Interaction: Click to save active state to Firestore. Justification: Provides a clear, intentional action for the user to 'note' their current emotional state, aligning with the user's request for explicit validation.
         - Report Info: Energy levels for each state. Goal: Compare. Viz: Radar Chart (Chart.js/Canvas). Interaction: Static visualization with tooltips on hover. Justification: Offers a holistic, visual comparison of a key quantitative metric across all states, reinforcing the concept of progression.
         - Report Info: All textual content. Goal: Inform. Viz: Structured text blocks. Interaction: Dynamically displayed based on user selection. Justification: Keeps the UI clean and focused on one state at a time, preventing information overload.
-        - Report Info: User selections over time. Goal: Track & Share. Viz: Textual list/table (HTML/JS) and Line Chart (Chart.js/Canvas). Interaction: Input user ID to filter and display historical data and visualize trends. Justification: Enables the core sharing requirement for tracking Léia's emotional journey and provides visual insight into progression over time.
+        - Report Info: All user selections over time (public). Goal: Track & Share. Viz: Textual list/table (HTML/JS) and Line Chart (Chart.js/Canvas). Interaction: Automatically loads all public data. Justification: Enables public consultation of the collective emotional journey, fulfilling the user's request for "consultable par tous" without individual IDs.
         - New Feature: Basic "Conseils" section. Goal: Provide potential guidance. Viz: Text block. Interaction: Placeholder for future dynamic advice based on data. Justification: Addresses the user's request for guiding the path towards a better emotional state, laying groundwork for future enhancements.
     -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
@@ -132,6 +134,10 @@
                             </div>
                         </div>
                     </div>
+                    <button id="validate-mood-button" class="mt-8 bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-300 w-full">
+                        Valider mon humeur actuelle
+                    </button>
+                    <p id="save-feedback" class="text-center mt-4 text-sm text-green-600 opacity-0 transition-opacity duration-300"></p>
                 </div>
             </section>
         </main>
@@ -149,23 +155,14 @@
         <section class="mt-20 bg-white p-8 rounded-2xl shadow-lg border border-stone-200">
             <header class="text-center mb-8">
                 <h2 class="text-3xl font-bold text-stone-900">Suivi Public des Émotions de Léia</h2>
-                <p class="mt-2 text-md text-stone-600">Partagez votre ID de session ci-dessous pour permettre à Nathan (ou à toute autre personne) de consulter votre parcours émotionnel. Entrez un ID de session pour visualiser l'historique et les tendances.</p>
+                <p class="mt-2 text-md text-stone-600">Explorez le parcours émotionnel enregistré par tous les utilisateurs. Chaque validation d'humeur contribue à cette vision collective.</p>
             </header>
             <div class="max-w-xl mx-auto space-y-6">
-                <div class="p-4 bg-stone-100 rounded-lg text-center">
-                    <p class="text-lg font-semibold text-stone-700">Votre ID de session actuel :</p>
-                    <p id="current-user-id" class="text-xl font-bold text-amber-700 break-all mt-2">Chargement...</p>
-                </div>
-
-                <div class="flex flex-col sm:flex-row gap-4 items-center">
-                    <input type="text" id="consult-user-id-input" placeholder="Entrez un ID de session à consulter" class="flex-grow p-3 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500">
-                    <button id="consult-button" class="bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-300 w-full sm:w-auto">
-                        Consulter les sélections
-                    </button>
-                </div>
+                <!-- Removed current user ID display -->
+                <!-- Removed consult input and button -->
                 
                 <div id="selection-history-container" class="mt-6 border border-stone-200 rounded-lg p-4 bg-stone-50">
-                    <p id="history-message" class="text-stone-500 text-center mb-4">Aucune sélection consultée pour le moment.</p>
+                    <p id="history-message" class="text-stone-500 text-center mb-4">Chargement de l'historique public...</p>
                     <div class="chart-container mb-6">
                         <canvas id="historyLineChart"></canvas>
                     </div>
@@ -173,7 +170,7 @@
                     <ul id="history-list" class="space-y-2 max-h-60 overflow-y-auto">
                     </ul>
                     <h3 class="text-xl font-bold text-stone-800 mt-6 mb-2">Conseils :</h3>
-                    <p id="advice-text" class="text-stone-700">En observant votre parcours émotionnel, vous pourrez identifier des tendances. Par exemple, si vous passez souvent d'un état d'exaltation à une tristesse profonde, cela pourrait indiquer un besoin de stabilité. Si vous restez longtemps dans la résignation, cherchez des activités qui vous apportent de petites joies. Le chemin vers un meilleur état émotionnel est unique à chacun et se construit pas à pas.</p>
+                    <p id="advice-text" class="text-stone-700">En observant ce parcours émotionnel collectif, vous pourrez identifier des tendances. Par exemple, si les niveaux d'énergie fluctuent fortement, cela pourrait indiquer un besoin de stabilité. Si les états de résignation sont fréquents, cherchez des activités qui vous apportent de petites joies. Le chemin vers un meilleur état émotionnel est unique à chacun et se construit pas à pas, et chaque contribution aide à mieux comprendre ces dynamiques.</p>
                 </div>
             </div>
         </section>
@@ -181,6 +178,24 @@
     </div>
 
     <script type="module">
+        // IMPORTANT: Pour que cette application fonctionne correctement avec Firebase Firestore,
+        // vous devez configurer les règles de sécurité de votre base de données dans la console Firebase.
+        // Accédez à votre projet Firebase -> Firestore Database -> onglet "Rules".
+        // Remplacez les règles existantes par celles-ci pour permettre la lecture et l'écriture
+        // pour les utilisateurs authentifiés (y compris anonymes) dans la collection publique:
+
+        /*
+        rules_version = '2';
+        service cloud.firestore {
+          match /databases/{database}/documents {
+            // Règle pour la collection publique des suivis émotionnels
+            match /artifacts/{appId}/public/data/leia_emotions_tracking/{document=**} {
+              allow read, write: if request.auth != null;
+            }
+          }
+        }
+        */
+
         const emotionData = [
             {
                 id: 0,
@@ -236,9 +251,8 @@
         const stateThoughts = document.getElementById('state-thoughts');
         const stateBehaviors = document.getElementById('state-behaviors');
         const stateEnergy = document.getElementById('state-energy');
-        const currentUserIdDisplay = document.getElementById('current-user-id');
-        const consultUserIdInput = document.getElementById('consult-user-id-input');
-        const consultButton = document.getElementById('consult-button');
+        const validateMoodButton = document.getElementById('validate-mood-button');
+        const saveFeedback = document.getElementById('save-feedback');
         const historyList = document.getElementById('history-list');
         const historyMessage = document.getElementById('history-message');
         const historyLineChartCanvas = document.getElementById('historyLineChart');
@@ -260,23 +274,23 @@
             window.firebase.onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     currentUserId = user.uid;
-                    currentUserIdDisplay.textContent = currentUserId;
                     isAuthReady = true;
+                    // Load public selections once authenticated
+                    loadAllPublicSelections();
                 } else {
                     try {
                         const credential = await window.firebase.signInAnonymously(auth);
                         currentUserId = credential.user.uid;
-                        currentUserIdDisplay.textContent = currentUserId;
                         isAuthReady = true;
+                        // Load public selections once authenticated
+                        loadAllPublicSelections();
                     } catch (error) {
                         console.error("Erreur d'authentification anonyme :", error);
-                        currentUserIdDisplay.textContent = "Erreur de chargement de l'ID";
                     }
                 }
             });
         } catch (error) {
             console.error("Erreur d'initialisation de Firebase :", error);
-            currentUserIdDisplay.textContent = "Firebase non initialisé";
         }
 
         function createEnergyBar(value, text) {
@@ -308,18 +322,32 @@
         async function saveSelection(stateId) {
             if (!isAuthReady || !db || !currentUserId) {
                 console.warn("Firebase non prêt ou utilisateur non authentifié pour sauvegarder la sélection.");
+                saveFeedback.textContent = "Erreur: Firebase non prêt.";
+                saveFeedback.classList.remove('text-green-600');
+                saveFeedback.classList.add('text-red-600', 'opacity-100');
                 return;
             }
             try {
                 const selectionsRef = window.firebase.collection(db, `artifacts/${appId}/public/data/leia_emotions_tracking`);
                 await window.firebase.addDoc(selectionsRef, {
-                    userId: currentUserId,
+                    userId: currentUserId, // Still save userId to identify who made the entry
                     stateId: stateId,
                     timestamp: new Date().toISOString()
                 });
                 console.log("Sélection sauvegardée avec succès !");
+                saveFeedback.textContent = "Humeur validée avec succès !";
+                saveFeedback.classList.remove('text-red-600');
+                saveFeedback.classList.add('text-green-600', 'opacity-100');
+                setTimeout(() => {
+                    saveFeedback.classList.remove('opacity-100');
+                    saveFeedback.classList.add('opacity-0');
+                }, 3000);
+                loadAllPublicSelections(); // Reload all public selections after saving
             } catch (e) {
                 console.error("Erreur lors de l'ajout du document : ", e);
+                saveFeedback.textContent = "Erreur lors de la sauvegarde.";
+                saveFeedback.classList.remove('text-green-600');
+                saveFeedback.classList.add('text-red-600', 'opacity-100');
             }
         }
 
@@ -350,7 +378,6 @@
             });
 
             activeStateId = stateId;
-            saveSelection(stateId); // Automatic save on click
         }
         
         function setupNavigation() {
@@ -515,26 +542,24 @@
             });
         }
 
-        async function fetchSelectionsForUser(userIdToConsult) {
+        async function loadAllPublicSelections() {
             if (!isAuthReady || !db) {
-                console.warn("Firebase non prêt pour consulter les sélections.");
+                console.warn("Firebase non prêt pour charger les sélections publiques.");
                 historyMessage.textContent = "Veuillez patienter, Firebase se charge...";
                 return;
             }
 
             historyList.innerHTML = '';
-            historyMessage.textContent = "Chargement des sélections...";
+            historyMessage.textContent = "Chargement de l'historique public...";
 
             try {
                 const selectionsRef = window.firebase.collection(db, `artifacts/${appId}/public/data/leia_emotions_tracking`);
-                const q = window.firebase.query(
-                    selectionsRef,
-                    window.firebase.where("userId", "==", userIdToConsult)
-                );
+                // Fetch all documents from the collection
+                const q = window.firebase.query(selectionsRef); 
                 const querySnapshot = await window.firebase.getDocs(q);
 
                 if (querySnapshot.empty) {
-                    historyMessage.textContent = `Aucune sélection trouvée pour l'ID : ${userIdToConsult}`;
+                    historyMessage.textContent = `Aucune humeur enregistrée publiquement pour le moment.`;
                     renderLineChart([]); // Clear the chart if no data
                     return;
                 }
@@ -547,40 +572,46 @@
                 // Sort in memory by timestamp (ascending for chart)
                 selections.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
 
-                historyMessage.textContent = `Sélections pour l'ID : ${userIdToConsult}`;
+                historyMessage.textContent = `Historique public des humeurs :`;
                 selections.forEach(selection => {
                     const state = emotionData.find(s => s.id === selection.stateId);
                     const stateName = state ? state.title : `État inconnu (${selection.stateId})`;
                     const date = new Date(selection.timestamp).toLocaleString('fr-FR');
                     const listItem = document.createElement('li');
                     listItem.className = 'p-2 border-b border-stone-100 last:border-b-0 text-stone-700';
-                    listItem.textContent = `${date} : ${stateName}`;
+                    // Display userId for clarity in public view
+                    listItem.textContent = `${date} par ${selection.userId.substring(0, 8)}... : ${stateName}`; 
                     historyList.appendChild(listItem);
                 });
 
                 renderLineChart(selections); // Render the line chart with fetched data
 
             } catch (error) {
-                console.error("Erreur lors de la consultation des sélections :", error);
-                historyMessage.textContent = "Erreur lors du chargement de l'historique.";
+                console.error("Erreur lors du chargement des sélections publiques :", error);
+                // Specific message for permission errors
+                if (error.code === 'permission-denied' || error.code === 'unauthenticated') {
+                    historyMessage.textContent = "Erreur : Permissions insuffisantes. Veuillez vérifier les règles de sécurité de votre base de données Firebase Firestore.";
+                    console.error("Veuillez vérifier vos règles de sécurité Firebase Firestore. Elles doivent permettre la lecture et l'écriture pour les utilisateurs authentifiés (y compris anonymes) dans la collection 'leia_emotions_tracking'.");
+                } else {
+                    historyMessage.textContent = "Erreur lors du chargement de l'historique public.";
+                }
                 renderLineChart([]); // Clear chart on error
             }
         }
 
-        consultButton.addEventListener('click', () => {
-            const userIdToConsult = consultUserIdInput.value.trim();
-            if (userIdToConsult) {
-                fetchSelectionsForUser(userIdToConsult);
-            } else {
-                historyMessage.textContent = "Veuillez entrer un ID de session.";
-            }
+        // Event listener for the new "Valider mon humeur actuelle" button
+        validateMoodButton.addEventListener('click', () => {
+            saveSelection(activeStateId);
         });
+
+        // Removed consult button and its event listener as public access is now default
+        // consultButton.addEventListener('click', () => { ... });
 
         document.addEventListener('DOMContentLoaded', () => {
             setupNavigation();
             updateContent(0); // Display initial state
             setupChart();
-            renderLineChart([]); // Initialize empty line chart on load
+            // loadAllPublicSelections() is now called after Firebase authentication is ready
         });
     </script>
 </body>
